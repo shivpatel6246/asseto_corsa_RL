@@ -1,0 +1,9 @@
+numpy
+gymnasium>=0.29
+stable-baselines3>=2.3
+torch
+pyyaml
+tensorboard
+pytest
+pyvjoy; sys_platform == "win32"
+pydirectinput; sys_platform == "win32"

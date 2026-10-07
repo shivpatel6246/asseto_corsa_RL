@@ -1,0 +1,45 @@
+env:
+  control_hz: 20                 # agent decisions per second (real time)
+  max_episode_seconds: 180
+  vjoy_device_id: 1
+  reference_line: auto           # auto -> data/lines/<track>__<layout>.npz; or a path; null disables track features
+  lookahead_m: [10, 20, 30, 50, 75, 100, 150, 200]
+  track_length_m: null           # override if AC reports 0 for the spline length
+
+  reward:
+    progress_per_m: 0.1          # reward per metre of forward progress along the track spline
+    offtrack_per_step: 0.5       # applied each step with more than max_tyres_out wheels off track
+    steer_rate: 0.05             # penalty on |steer change| per step, discourages twitchy steering
+    termination_penalty: 20.0
+
+  termination:
+    max_tyres_out: 2             # more than this many wheels off = off track
+    offtrack_grace_s: 1.0
+    start_grace_s: 4.0           # don't count as stuck right after a reset
+    stuck_speed_kmh: 5.0
+    stuck_grace_s: 4.0
+    max_backwards_m: 30.0
+    damage_threshold: null       # e.g. 5.0 to end episodes on wall hits (needs damage enabled in AC)
+
+  reset:
+    # Key combo (pydirectinput names) that restarts the session / teleports the car in AC.
+    # Leave empty to reset by hand (prompted in the terminal) while testing.
+    hotkey: []
+    settle_s: 2.0
+    timeout_s: 20.0
+
+sac:
+  learning_rate: 0.0003
+  buffer_size: 1000000
+  batch_size: 256
+  gamma: 0.99
+  tau: 0.005
+  learning_starts: 2000
+  net_arch: [256, 256]
+  ent_coef: auto
+  device: auto
+
+train:
+  total_timesteps: 2000000
+  checkpoint_every: 20000
+  run_dir: runs
