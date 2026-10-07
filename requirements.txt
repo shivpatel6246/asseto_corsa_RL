@@ -1,9 +1,5 @@
-numpy
-gymnasium>=0.29
-stable-baselines3>=2.3
-torch
+# Our additions on top of third_party/assetto_corsa_gym/requirements.txt (install that first).
+scipy        # imported by upstream reference_lap.py/track.py but missing from upstream requirements
 pyyaml
-tensorboard
+matplotlib
 pytest
-pyvjoy; sys_platform == "win32"
-pydirectinput; sys_platform == "win32"

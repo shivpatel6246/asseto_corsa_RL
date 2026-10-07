@@ -1,0 +1,60 @@
+# Our overrides, merged on top of third_party/assetto_corsa_gym/config.yml (upstream defaults).
+# CLI dotlist overrides go on top of this, e.g. `Agent.num_steps=50000`.
+
+disable_wandb: True          # CLAUDE.md rule 5: local CSV + TensorBoard only
+seed: 0
+device: auto                 # ours: auto | cuda | cpu (upstream train.py asserts CUDA; we allow CPU)
+
+Agent:
+  num_steps: 300_000         # first run cap (~3.3 h of sim time at 25 Hz)
+  checkpoint_freq: 20_000
+  memory_size: 1_000_000     # upstream default 8M would need ~8 GB RAM at this obs size
+  eval_interval: 0
+
+AssettoCorsa:
+  track: indianapolis_sp
+  car: ks_mazda_miata
+  ego_sampling_freq: 25      # must match sensors_par/config.py (25 by default)
+  max_episode_py_time: 600.
+  use_relative_actions: True # upstream default for RL; the baseline overrides this to False
+  max_steer_rate: 900.0
+  enable_out_of_track_termination: True
+  enable_low_speed_termination: True
+  use_ac_out_of_track: True  # out of track = more than 2 wheels out (AC's own count)
+  send_reset_at_start: True  # CSP ext_resetCar on every reset
+  penalize_actions_diff: False  # our wrapper's w_dsteer term replaces this
+
+centerline:
+  file: data/indianapolis_sp-centerline.csv   # built by scripts/prepare_assets.py, committed
+  spacing_m: 1.0
+  smooth_sigma_m: 3.0
+
+reward:                       # see src/acrl_indy/reward.py
+  w_progress: 1.0             # per metre of progress along the centerline
+  w_lat: 0.1                  # * lateral_error^2 (m^2)
+  w_dsteer: 1.0               # * (change in normalized steer command)^2
+  lateral_termination_m: 4.0
+  termination_penalty: 0.0
+
+baseline:                     # see src/acrl_indy/pure_pursuit.py
+  use_relative_actions: False # absolute actions for the classical controller
+  target_speed_kmh: 100.0
+  max_lat_accel: 7.0          # m/s^2; caps speed before corners: v <= sqrt(a / curvature)
+  curvature_preview_m: 80.0
+  wheelbase_m: 2.265          # NA/NB Miata; VERIFY if the baseline understeers/oversteers the line
+  steer_ratio: 15.0           # road-wheel -> steering-wheel; VERIFY (AC car data is encrypted)
+  steer_sign: 1               # VERIFY: scripts/smoke_gym.py measures and prints the correct value
+  lookahead_base_m: 4.0
+  lookahead_gain_s: 0.5       # lookahead = base + gain * speed[m/s]
+  lookahead_min_m: 6.0
+  lookahead_max_m: 30.0
+  speed_kp: 0.15
+  speed_ki: 0.03
+  speed_i_max: 1.0
+
+train:
+  stall_check_steps: 100_000  # CLAUDE.md Phase 5: stop and diagnose if no progress by here
+  stall_min_progress_m: 500.0 # "progress" = best single-episode centerline distance
+
+eval:
+  max_time_s: 400.0

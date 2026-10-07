@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acrl-indy"
+version = "0.1.0"
+description = "RL agent that drives one lap of Indianapolis on the centerline (Assetto Corsa), on top of assetto_corsa_gym"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
